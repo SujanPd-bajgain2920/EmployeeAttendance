@@ -1,0 +1,279 @@
+﻿@model AttendanceEdit
+@{
+    var errors = ViewData.ModelState.Values
+        .SelectMany(v => v.Errors)
+        .Select(e => e.ErrorMessage)
+        .ToList();
+}
+
+<style>
+
+    /* Countdown Timer Style */
+    .countdown-timer {
+        font-size: 36px;
+        font-weight: bold;
+        color: darkslategrey;
+        margin-top: 10px;
+    }
+
+    /* Employee Information Style */
+    .employee-info {
+        font-size: 18px;
+        margin-top: 15px;
+        color: #333;
+    }
+
+
+
+    /* Slide Toggle Style */
+    .slide-toggle {
+        position: relative;
+        display: inline-block;
+        width: 70px;
+        height: 34px;
+        margin-left: 10px;
+    }
+
+        .slide-toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #dc3545; /* Default Red Color for "Office Out" */
+        transition: 0.4s;
+        border-radius: 34px;
+    }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+
+    input:checked + .slider {
+        background-color: #28a745; /* Green Color for "Office In" */
+    }
+
+        input:checked + .slider:before {
+            transform: translateX(36px);
+        }
+
+
+    .attendance-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 50px;
+        padding: 20px;
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .attendance-label {
+        font-size: 22px;
+        font-weight: 600;
+        color: #0056b3;
+    }
+
+    .form-check-label {
+        margin-left: 10px;
+        font-size: 23px;
+    }
+
+    .form-check-input {
+        height: 40px;
+        width: 70px;
+        background-color: #dc3545; /* Red color for Office Out by default */
+        border-color: #dc3545;
+    }
+
+        .form-check-input:checked {
+            background-color: #28a745; /* Green color for Office In */
+            border-color: #28a745;
+        }
+
+        .form-check-input:focus {
+            box-shadow: 0 0 0 0.25rem rgba(40, 167, 69, 0.25);
+        }
+
+    .status-card {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        margin-top: 30px;
+        background-color: #fff;
+        transition: background-color 0.3s, transform 0.3s;
+    }
+
+        .status-card.in {
+            background-color: #d4edda; /* Light green for office in */
+        }
+
+        .status-card.out {
+            background-color: #f8d7da; /* Light red for office out */
+        }
+
+    .status-title {
+        font-size: 24px;
+        font-weight: bold;
+    }
+
+    .time-zone {
+        font-size: 18px;
+        color: #6c757d;
+    }
+
+
+    /* View Report Button Style */
+    .view-report-btn {
+        display: inline-block;
+        padding: 10px 20px;
+        font-size: 18px;
+        color: #fff;
+        background-color: #007bff; /* Blue color */
+        border: none;
+        border-radius: 5px;
+       
+        text-align: center;
+        text-decoration: none;
+        margin-top: 20px;
+       
+    }
+
+
+</style>
+
+<div class="container">
+    <form id="attendanceForm" asp-action="Index" asp-controller="Home" method="post">
+        <input type="hidden" asp-for="EmpId" value="@User.Identity!.Name" />
+        <input type="hidden" id="isOfficeIn" name="isOfficeIn" value="@ViewBag.isOfficeIn" />
+
+       @*  <div class="attendance-row">
+            <div class="attendance-label">
+                <h1>Office Attendance</h1>
+            </div>
+            <div>
+                <div class="form-check form-switch d-flex align-items-center">
+                    <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" onchange="toggleOfficeInOut()" @(ViewBag.isOfficeIn ? "" : "checked")>
+                    <label class="form-check-label" for="flexSwitchCheckDefault">Office Out / Office In</label>
+                </div>
+            </div>
+        </div> *@
+
+        <div class="attendance-row">
+            <div class="attendance-label">
+                <h1>Office Attendance</h1>
+            </div>
+            <div>
+                <!-- Slide Toggle Button -->
+                <label class="slide-toggle">
+                    <input type="checkbox" id="flexSwitchCheckDefault" onchange="toggleOfficeInOut()" @(ViewBag.isOfficeIn ? "" : "checked")>
+                    <span class="slider"></span>
+                </label>
+                <label class="form-check-label" for="officeToggle">Office Out / Office In</label>
+            </div>
+        </div>
+
+
+        <div class="text-end mt-3">
+            <input type="submit" class="btn btn-primary" value="Submit" style="display:none;" />
+        </div>
+    </form>
+
+    <!-- Dynamic Status Card -->
+    <div class="status-card @(ViewBag.isOfficeIn ? "out" : "in")">
+        <div>
+            <div class="status-title">
+                @(ViewBag.isOfficeIn ? "You are out of the office" : "You are in the office")
+            </div>
+            <div class="countdown-timer" id="countdownTimer">
+                Current Time: <span id="currentTime"></span>
+            </div>
+        </div>
+        <div class="employee-info">
+            <div>
+                <strong>Employee Name:</strong> @User.Claims.FirstOrDefault(c => c.Type == "EmpName")?.Value
+            </div>
+            <div>
+                <strong>Email:</strong> @User.Claims.FirstOrDefault(c => c.Type == "email")?.Value
+            </div>
+            <div>
+                <strong>Total Working Days:</strong> @ViewBag.TotalWorkingDays
+            </div>
+        </div>
+    </div>
+</div>
+
+<a asp-action="Report" asp-controller="Home" class="view-report-btn">View Report</a>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var successMessage = '@TempData["SuccessMessage"]';
+        var errorMessage = '@TempData["ErrorMessage"]';
+
+        if (successMessage) {
+            alert(successMessage);
+        }
+
+        if (errorMessage) {
+            alert(errorMessage);
+        }
+
+        // Function to update the current date and time dynamically
+        function updateTime() {
+            var currentTimeElement = document.getElementById('currentTime');
+
+            // Create a Date object for the current time
+            var now = new Date();
+
+            // Format the date and time to Nepali Time Zone using Intl.DateTimeFormat
+            var nepaliDateTime = new Intl.DateTimeFormat('en-GB', {
+                timeZone: 'Asia/Kathmandu',
+                day: '2-digit',
+                month: 'short', // Display month in short format (e.g., Jan, Feb)
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: true   // Enable 12-hour format to show AM/PM
+            }).format(now);
+
+            currentTimeElement.textContent = nepaliDateTime;
+        }
+
+        setInterval(updateTime, 1000); // Update every second
+    });
+
+    function toggleOfficeInOut() {
+        var isOfficeIn = document.getElementById("flexSwitchCheckDefault").checked;
+        var action = isOfficeIn ? "clock in" : "clock out";
+
+        var confirmAction = confirm("Are you sure you want to " + action + "?");
+
+        if (confirmAction) {
+            document.getElementById("isOfficeIn").value = isOfficeIn;
+            document.getElementById("attendanceForm").submit();
+        } else {
+            // Revert the toggle state if the user cancels
+            document.getElementById("flexSwitchCheckDefault").checked = !isOfficeIn;
+        }
+    }
+</script>

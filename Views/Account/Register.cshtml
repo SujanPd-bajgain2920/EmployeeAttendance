@@ -1,0 +1,156 @@
+﻿@model EmployeeListEdit
+
+@{
+    Layout = "_StaticLayout";
+}
+<style>
+
+
+    .max-w-sm {
+        max-width: 700px; /* Adjusted to accommodate two columns */
+    }
+
+    .form-wrapper {
+        display: flex;
+        justify-content: space-between;
+        gap: 20px; /* Space between form and image */
+    }
+
+    .form-content {
+        flex: 1;
+    }
+
+    .image-preview-container {
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+    }
+
+    .form-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 15px; /* Space between columns */
+    }
+
+    .form-group {
+        flex: 1;
+        margin-bottom: 15px;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 10px;
+        height: auto;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #004085;
+        }
+
+    .text-danger {
+        font-size: 0.875rem;
+    }
+
+    .image-preview {
+        width: 120px; /* Width for passport-sized photo */
+        height: 150px; /* Height for passport-sized photo */
+        margin-top: 10px;
+        border: 1px solid #ddd;
+        padding: 5px;
+        display: block; /* Ensure the image is always displayed as a block element */
+    }
+</style>
+
+<div class="container top">
+    <div class="form-wrapper">
+        <!-- Form Content -->
+        <div class="form-content">
+            <form asp-action="Register" asp-controller="Account" class="mt-5 mx-auto max-w-sm" enctype="multipart/form-data">
+                <h2 class="text-center mb-4">Employee Registration</h2>
+
+                <!-- Validation summary -->
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <!-- Row 1: Employee Name and Phone Number -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label asp-for="EmpName" class="form-label">Full Name</label>
+                        <input asp-for="EmpName" type="text" class="form-control" id="empName" placeholder="Full Name" required>
+                        <span asp-validation-for="EmpName" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="EmpPhone" class="form-label">Phone Number</label>
+                        <input asp-for="EmpPhone" type="text" class="form-control" id="empPhone" placeholder="Phone Number" required>
+                        <span asp-validation-for="EmpPhone" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <!-- Row 2: Email Address and Designation -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label asp-for="EmpEmail" class="form-label">Email Address</label>
+                        <input asp-for="EmpEmail" type="email" class="form-control" id="empEmail" placeholder="Email Address" required>
+                        <span asp-validation-for="EmpEmail" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Designation" class="form-label">Designation</label>
+                        <input asp-for="Designation" type="text" class="form-control" id="designation" placeholder="Designation" required>
+                        <span asp-validation-for="Designation" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <!-- Row 3: Password and Profile Picture -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label asp-for="LoginPassword" class="form-label">Password</label>
+                        <input asp-for="LoginPassword" type="password" class="form-control" id="loginPassword" placeholder="Password" required>
+                        <span asp-validation-for="LoginPassword" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="EmpFile" class="form-label">Upload Profile Picture</label>
+                        <input asp-for="EmpFile" type="file" class="form-control" id="empFile" accept="image/*" onchange="previewImage(event)">
+                        <span asp-validation-for="EmpFile" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="btn btn-primary w-100">Register</button>
+            </form>
+        </div>
+
+        <!-- Image Preview Container -->
+        <div class="image-preview-container">
+            <img id="imagePreview" class="image-preview" alt="Profile Picture Preview" style="display:none;" />
+        </div>
+    </div>
+</div>
+
+<script>
+    function previewImage(event) {
+        const imagePreview = document.getElementById('imagePreview');
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                imagePreview.src = e.target.result;
+                imagePreview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        } else {
+            imagePreview.style.display = 'none';
+            imagePreview.src = '';
+        }
+    }
+</script>
