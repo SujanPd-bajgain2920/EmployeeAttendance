@@ -279,7 +279,8 @@ namespace EmployeeAttendance.Controllers
                 EmpName = user.EmpName,
                 EmpEmail = user.EmpEmail,
                 EmpPhone = user.EmpPhone,
-                ProfilePicture = user.ProfilePicture
+                ProfilePicture = user.ProfilePicture,
+                Designation = user.Designation
             };
             return View(userEdit);
         }

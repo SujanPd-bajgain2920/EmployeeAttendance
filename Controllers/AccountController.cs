@@ -34,7 +34,7 @@ namespace EmployeeAttendance.Controllers
         [HttpPost]
         public IActionResult Register(EmployeeListEdit u)
         {
-
+            //return Json(u);
             try
             {
                 var users = _context.EmployeeLists.Where(x => x.EmpEmail == u.EmpEmail).FirstOrDefault();
@@ -52,6 +52,11 @@ namespace EmployeeAttendance.Controllers
                     {
                         string fileName = "EmpImage" + Guid.NewGuid() + Path.GetExtension(u.EmpFile.FileName);
                         string filePath = Path.Combine(_env.WebRootPath, "EmpImage", fileName);
+                        // Ensure the EmpImage directory exists
+                        if (!Directory.Exists(Path.Combine(_env.WebRootPath, "EmpImage")))
+                        {
+                            Directory.CreateDirectory(Path.Combine(_env.WebRootPath, "EmpImage"));
+                        }
                         using (FileStream stream = new FileStream(filePath, FileMode.Create))
                         {
                             u.EmpFile.CopyTo(stream);
@@ -73,7 +78,7 @@ namespace EmployeeAttendance.Controllers
                         UserRole = "User" 
                     };
 
-
+                   // return Json(employeeList);
                     _context.Add(employeeList);
                     _context.SaveChanges();
 
