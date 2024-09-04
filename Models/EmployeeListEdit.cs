@@ -18,9 +18,13 @@ namespace EmployeeAttendance.Models
 
         public string? ProfilePicture { get; set; }
 
+        public string UserRole { get; set; } = null!;
+
         public string LoginStatus { get; set; } = null!;
 
         [DataType(DataType.Upload)]
         public IFormFile? EmpFile { get; set; } = null!;
+
+        public string EmailToken { get; set; } = null!;
     }
 }

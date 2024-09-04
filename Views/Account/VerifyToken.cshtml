@@ -1,0 +1,58 @@
+﻿@model EmployeeListEdit
+@{
+    ViewData["Title"] = "Forgot-Password";
+    Layout = "_StaticLayout";
+}
+
+<div class="container min-vh-100 d-flex align-items-center justify-content-center">
+    <div class="card shadow-sm rounded p-4" style="max-width: 400px; width: 100%;">
+        <h2 class="text-center mb-4">Verify Token</h2>
+        <form asp-action="VerifyToken" class="mb-4">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+            <input asp-for="EmpEmail" type="hidden" />
+            <div class="mb-3">
+                <label asp-for="EmailToken" class="form-label">Token</label>
+                <input asp-for="EmailToken" class="form-control" placeholder="Enter your token" required>
+                <span asp-validation-for="EmailToken" class="text-danger"></span>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Verify</button>
+        </form>
+
+        <div id="countdown" class="text-center text-muted mb-3"></div>
+
+        <form asp-action="ForgotPassword" method="post" id="resend-token-form" class="text-center">
+            <input asp-for="EmpEmail" type="hidden" />
+            <button type="submit" class="btn btn-secondary w-100">Resend Token</button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Set the expiration time for the token (2 minutes from now)
+        var countDownDate = new Date().getTime() + 2 * 60 * 1000;
+
+        // Update the count down every 1 second
+        var countdownfunction = setInterval(function () {
+
+            // Get the current time
+            var now = new Date().getTime();
+
+            // Calculate the remaining time
+            var distance = countDownDate - now;
+
+            // Time calculations for minutes and seconds
+            var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            // Display the result in the element with id="countdown"
+            document.getElementById("countdown").innerHTML = "Token expires in " + minutes + "m " + seconds + "s ";
+
+            // If the count down is over, display an expired message
+            if (distance < 0) {
+                clearInterval(countdownfunction);
+                document.getElementById("countdown").innerHTML = "Token has expired";
+            }
+        }, 1000);
+    </script>
+}

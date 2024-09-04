@@ -99,19 +99,87 @@ namespace EmployeeAttendance.Controllers
          }*/
 
 
-        [Authorize]
+        /*[Authorize]
         public IActionResult Index()
         {
             var empId = Convert.ToInt16(User.Identity!.Name);
-            var employeeAttendance = _Context.Attendances.FirstOrDefault(ea => ea.EmpId == empId && ea.DateOut == null);
+            var currentDate = DateOnly.FromDateTime(DateTime.UtcNow.AddMinutes(345));
+            var previousDate = currentDate.AddDays(-1);
 
-            ViewBag.isOfficeIn = employeeAttendance == null ? true : false;
+            // Check for incomplete attendance record from the previous day
+            var incompleteRecord = _Context.Attendances.FirstOrDefault(ea => ea.EmpId == empId && ea.DateIn == previousDate && ea.DateOut == null);
+
+            if (incompleteRecord != null)
+            {
+                // Mark the toggle switch as Office Out if there's an incomplete record
+                ViewBag.isOfficeIn = false;
+            }
+            else
+            {
+                // Check if the employee is currently clocked in
+                var employeeAttendance = _Context.Attendances.FirstOrDefault(ea => ea.EmpId == empId && ea.DateIn == currentDate && ea.DateOut == null);
+                ViewBag.isOfficeIn = employeeAttendance == null;
+            }
 
             ViewBag.Attendance = _Context.Attendances.Where(em => em.EmpId == empId);
 
             // Calculate total working days by counting unique dates
             var totalWorkingDays = _Context.Attendances
-                                            .Where(a => a.EmpId == empId && a.DateIn != null)
+                                            .Where(a => a.EmpId == empId && a.DateOut != null)
+                                            .Select(a => a.DateIn)
+                                            .Distinct()
+                                            .Count();
+
+            ViewBag.TotalWorkingDays = totalWorkingDays;
+
+
+            return View();
+        }*/
+
+        [Authorize]
+        public IActionResult Index()
+        {
+            var empId = Convert.ToInt16(User.Identity!.Name);
+            var currentDate = DateOnly.FromDateTime(DateTime.UtcNow.AddMinutes(345)); // Nepal Time
+            var previousDate = currentDate.AddDays(-1);
+
+            // Check for incomplete attendance record from the previous day
+            var incompleteRecord = _Context.Attendances.FirstOrDefault(ea => ea.EmpId == empId && ea.DateIn == previousDate && ea.DateOut == null);
+
+            if (incompleteRecord != null)
+            {
+                // Mark incomplete records from the previous day as "N/A" conceptually (keep as null in the database)
+                incompleteRecord.DateOut = null;
+                incompleteRecord.TimeOut = null;
+                _Context.SaveChanges();
+
+                // Mark the toggle switch as Office Out if there's an incomplete record
+                ViewBag.isOfficeIn = false;
+            }
+            else
+            {
+                // Check if the employee is currently clocked in
+                var employeeAttendance = _Context.Attendances.FirstOrDefault(ea => ea.EmpId == empId && ea.DateIn == currentDate && ea.DateOut == null);
+                ViewBag.isOfficeIn = employeeAttendance == null;
+            }
+
+            // Set Attendance records in ViewBag, converting nulls to "N/A" for display
+            var attendanceRecords = _Context.Attendances
+                .Where(em => em.EmpId == empId)
+                .Select(a => new
+                {
+                    a.EmpId,
+                    a.DateIn,
+                    a.TimeIn,
+                    DateOut = a.DateOut.HasValue ? a.DateOut.Value.ToString("yyyy-MM-dd") : "N/A",
+                    TimeOut = a.TimeOut.HasValue ? a.TimeOut.Value.ToString("HH:mm") : "N/A"
+                });
+
+            ViewBag.Attendance = attendanceRecords;
+
+            // Calculate total working days by counting unique dates, excluding "N/A"
+            var totalWorkingDays = _Context.Attendances
+                                            .Where(a => a.EmpId == empId && a.DateOut != null)
                                             .Select(a => a.DateIn)
                                             .Distinct()
                                             .Count();
@@ -139,19 +207,14 @@ namespace EmployeeAttendance.Controllers
                 }
                 else if (employeeAttendance == null)
                 {
-                    /*short maxid = _Context.Attendances.Any() ? Convert.ToInt16(_Context.Attendances.Max(e => e.EmpId) + 1) : (short)1;
-                    attendance.EmpId = maxid;*/
-
                     // Office In: Record new attendance entry
                     Attendance record = new Attendance()
                     {
-                        
                         EmpId = attendance.EmpId,
                         DateIn = currentDate,
                         TimeIn = TimeOnly.FromDateTime(nepalTime)
-                        // TimeIn = nepalTime.ToString("HH:mm:ss")
                     };
-                    
+
                     _Context.Attendances.Add(record);
                     _Context.SaveChanges();
                     TempData["SuccessMessage"] = "Clocked in successfully for today!";
@@ -163,7 +226,7 @@ namespace EmployeeAttendance.Controllers
                 {
                     // Office Out: Update the existing attendance entry
                     employeeAttendance.DateOut = currentDate;
-                    employeeAttendance.TimeOut = TimeOnly.FromDateTime(nepalTime); /*nepalTime.ToString("HH:mm:ss");*/
+                    employeeAttendance.TimeOut = TimeOnly.FromDateTime(nepalTime);
                     _Context.SaveChanges();
                     TempData["SuccessMessage"] = "Clocked out successfully for today!";
                 }
@@ -178,7 +241,7 @@ namespace EmployeeAttendance.Controllers
 
         // GET: AttendanceReport
         public IActionResult Report(DateTime? startDate, DateTime? endDate)
-            {
+        {
             var empId = Convert.ToInt16(User.Identity!.Name); //EmployeeHelper.GetCurrentEmpId(_httpContextAccessor.HttpContext);
                                                               //return Json(empId);
 
@@ -203,6 +266,56 @@ namespace EmployeeAttendance.Controllers
             ViewBag.TotalAbsent = totalAbsent;
 
             return View(attendanceList);
-            }
+         }
+
+        [HttpGet]
+        public IActionResult Edit(int id)
+        {
+
+            var user = _Context.EmployeeLists.Where(x => x.EmpId == Convert.ToInt16(User.Identity!.Name)).FirstOrDefault();
+            EmployeeListEdit userEdit = new()
+            {
+                EmpId = user.EmpId,
+                EmpName = user.EmpName,
+                EmpEmail = user.EmpEmail,
+                EmpPhone = user.EmpPhone,
+                ProfilePicture = user.ProfilePicture
+            };
+            return View(userEdit);
         }
+        [Authorize]
+        [HttpPost]
+        public IActionResult Edit(EmployeeListEdit u)
+        {
+            if (u.EmpFile != null)
+            {
+                string fileName = "EmpImage" + Guid.NewGuid() + Path.GetExtension(u.EmpFile.FileName);
+                string filePath = Path.Combine(_env.WebRootPath, "EmpImage", fileName);
+                using (FileStream stream = new FileStream(filePath, FileMode.Create))
+                {
+                    u.EmpFile.CopyTo(stream);
+                }
+                u.ProfilePicture = fileName;
+            }
+
+            EmployeeList user = new()
+            {
+                EmpId = u.EmpId,
+                EmpName = u.EmpName,
+                EmpEmail = u.EmpEmail,
+                EmpPhone = u.EmpPhone,
+                ProfilePicture = u.ProfilePicture
+            };
+
+            _Context.Update(user);
+            _Context.SaveChangesAsync();
+            return RedirectToAction("ProfileUpdate");
+
+        }
+
     }
+
+
+
+
+}

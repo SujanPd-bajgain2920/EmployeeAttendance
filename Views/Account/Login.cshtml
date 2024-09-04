@@ -1,29 +1,215 @@
 ﻿@model EmployeeListEdit
-
 @{
     Layout = "_StaticLayout";
 }
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        background: linear-gradient(to bottom right, #7386D5, #6A75C8);
+        overflow: hidden;
+        font-family: 'Arial', sans-serif;
+    }
 
- <div class="container d-flex justify-content-center align-items-center vh-100">
-        <div class="card p-4 shadow-sm" style="width: 20rem;">
-            <h3 class="card-title text-center mb-4">Login</h3>
-            <form asp-action="Login" method="post" asp-controller="Account">
-            <!-- Validation summary -->
-            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
-                <div class="mb-3">
-                    <label asp-for="EmpEmail" class="form-label">Email address</label>
-                    <input asp-for="EmpEmail" type="email" class="form-control" id="email" required>
-                <span asp-validation-for="EmpName" class="text-danger"></span>
+    .container-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+
+    .login-container {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 40px 30px;
+        border-radius: 20px;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        width: 100%;
+        max-width: 400px;
+        text-align: center;
+        backdrop-filter: blur(15px);
+        transform: scale(0.8);
+        opacity: 0;
+        transition: transform 0.8s ease-out, opacity 0.8s ease-out;
+        z-index: 10;
+    }
+
+        .login-container.visible {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        .login-container h3 {
+            margin-bottom: 30px;
+            color: #fff;
+            font-weight: bold;
+            letter-spacing: 1px;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+        }
+
+    .form-control {
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 30px;
+        margin-bottom: 15px;
+        padding: 10px 20px;
+        font-size: 16px;
+        color: #fff;
+        border: none;
+        transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out;
+    }
+
+        .form-control:focus {
+            background: rgba(255, 255, 255, 0.5);
+            outline: none;
+            transform: scale(1.02);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+    .btn-login {
+        background-color: #333;
+        border: none;
+        border-radius: 30px;
+        padding: 10px 30px;
+        color: white;
+        font-size: 16px;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+        transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out;
+    }
+
+        .btn-login::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 300%;
+            height: 300%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.5) 100%);
+            transition: transform 0.3s ease-in-out;
+            transform: translate(-50%, -50%) scale(0);
+            border-radius: 50%;
+            z-index: 0;
+        }
+
+        .btn-login:hover::before {
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .btn-login:hover {
+            background-color: #555;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        }
+
+    .forgot-password {
+        display: block;
+        margin-top: 10px;
+        color: #fff;
+        text-decoration: none;
+        transition: color 0.3s ease-in-out;
+    }
+
+        .forgot-password:hover {
+            color: #aaa;
+            text-decoration: underline;
+        }
+
+    .background {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: -1;
+        display: flex;
+        justify-content: flex-end;
+        align-items: flex-end;
+        overflow: hidden;
+    }
+
+    .character img {
+        max-width: 200px;
+        max-height: 200px;
+        object-fit: cover;
+    }
+
+    .background-shapes {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: -1;
+        overflow: hidden;
+    }
+
+        .background-shapes .shape {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            transition: transform 15s linear;
+        }
+
+    .shape-1 {
+        width: 200px;
+        height: 200px;
+        bottom: -50px;
+        left: -50px;
+    }
+
+    .shape-2 {
+        width: 300px;
+        height: 300px;
+        top: -100px;
+        right: -100px;
+    }
+
+    .shape-3 {
+        width: 250px;
+        height: 250px;
+        bottom: -75px;
+        right: -75px;
+    }
+</style>
+
+<body>
+
+    <div class="container-wrapper">
+        <div class="login-container">
+            <h3>User Login</h3>
+            <form asp-action="Login" asp-controller="Account">
+                <input asp-for="EmpEmail" class="form-control" placeholder="UserEmail">
+                <input asp-for="LoginPassword" type="password" class="form-control" placeholder="Password">
+                <button type="submit" class="btn btn-login mt-3">Login</button>
+
+                <div class="mt-4 text-center">
+                    <a asp-action="Register" asp-controller="Account" class="text-blue-500 hover:underline">Create an account</a>
+                    <p class="mt-2 text-gray-600 text-sm">Forgot your password? <a asp-action="ForgotPassword" asp-controller="Account" class="text-blue-500 hover:underline">Reset it</a></p>
                 </div>
-                <div class="mb-3">
-                    <label asp-for="LoginPassword" class="form-label">Password</label>
-                    <input asp-for="LoginPassword" type="password" class="form-control" id="password" required>
-                    <span asp-validation-for="EmpName" class="text-danger"></span>
-                </div>
-                <button type="submit" class="btn btn-primary w-100">Login</button>
             </form>
-            <div class="mt-3 text-center">
-                <p class="mb-0">Don't have an account? <a asp-action="Register" asp-controller="Account">Register here</a></p>
-            </div>
         </div>
     </div>
+    <div class="background">
+        <div class="character">
+            <img src="~/Images/man.png" alt="Character">
+        </div>
+    </div>
+    <div class="background-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+    </div>
+    <script>
+        window.onload = function () {
+            document.querySelector('.login-container').classList.add('visible');
+            let character = document.querySelector('.character');
+
+            let move = 0;
+            setInterval(function () {
+                move = (move === 0) ? 20 : 0;
+                character.style.transform = `translateY(${move}px)`;
+            }, 1000);
+        };
+    </script>
+</body>

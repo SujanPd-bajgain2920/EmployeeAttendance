@@ -1,0 +1,131 @@
+﻿@model EmployeeAttendance.Models.AttendanceEdit
+
+@{
+
+    var employee = Model.Employee;
+    var attendanceRecords = Model.AttendanceRecords;
+    var totalPresent = Model.TotalPresent;
+}
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+    }
+
+    .container {
+        background-color: #ffffff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .employee-id-card {
+        display: flex;
+        align-items: center;
+        padding: 20px;
+        background-color: #e9f5ff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+    }
+
+    .employee-info {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+        .employee-info h4 {
+            margin: 0;
+            color: #007bff;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .employee-info p {
+            margin: 0;
+            font-size: 14px;
+            color: #333;
+        }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+
+    thead {
+        background-color: #007bff;
+        color: #ffffff;
+    }
+
+    th, td {
+        padding: 10px;
+        border: 1px solid #ddd;
+        text-align: center;
+    }
+
+    tbody tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+
+    tbody tr:hover {
+        background-color: #f1f1f1;
+    }
+
+    .footer {
+        margin-top: 20px;
+        text-align: center;
+        color: #777;
+    }
+</style>
+
+
+<div class="container">
+    <h2 class="text-center text-primary">Employee Attendance Report</h2>
+
+    <!-- Employee ID Card -->
+    <div class="employee-id-card">
+        <div class="employee-info">
+            <h4>@employee.EmpName </h4>
+            <p><strong>ID:</strong> @employee.EmpId</p>
+            <p><strong>Post:</strong> @employee.Designation</p>
+            <p><strong>Email:</strong> @employee.EmpEmail</p>
+            <p><strong>Phone:</strong> @employee.EmpPhone</p>
+            <p><strong>Total Working Days:</strong> @totalPresent</p>
+        </div>
+    </div>
+
+    <!-- Attendance Table -->
+    <table>
+        <thead>
+            <tr>
+                <th>SN</th>
+                <th>Date In</th>
+                <th>Time In</th>
+                <th>Date Out</th>
+                <th>Time Out</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < attendanceRecords.Count; i++)
+            {
+                var attendance = attendanceRecords[i];
+                <tr>
+                    <td>@(i + 1)</td>
+                    <td>@attendance.DateIn.ToShortDateString()</td>
+                    <td>
+                        @(attendance.TimeIn.HasValue ? attendance.TimeIn.Value.ToString("hh:mm tt") : "N/A")
+                    </td>
+                    <td>@(attendance.DateOut.HasValue ? attendance.DateOut.Value.ToShortDateString() : "N/A")</td>
+                    <td>@(attendance.TimeOut.HasValue ? attendance.TimeOut.Value.ToString("hh:mm tt") : "N/A")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="footer">
+        Generated on @DateTime.Now.ToString("MMMM d, yyyy")
+    </div>
+</div>

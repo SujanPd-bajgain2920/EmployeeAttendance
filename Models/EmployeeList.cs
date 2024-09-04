@@ -19,6 +19,8 @@ public partial class EmployeeList
 
     public string? ProfilePicture { get; set; }
 
+    public string UserRole { get; set; } = null!;
+
     public string LoginStatus { get; set; } = null!;
 
     public virtual ICollection<Attendance> Attendances { get; set; } = new List<Attendance>();

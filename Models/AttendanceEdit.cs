@@ -8,7 +8,7 @@
 
         public DateOnly? DateOut { get; set; }
 
-        public TimeOnly TimeIn { get; set; }
+        public TimeOnly? TimeIn { get; set; }
 
         public TimeOnly? TimeOut { get; set; }
 
@@ -26,9 +26,13 @@
 
          public bool HasMarkedArrival { get; set; }*/
 
-        public List<AttendanceEdit> AttendanceRecords { get; set; }
+       
         public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
+
+        public EmployeeListEdit Employee { get; set; } // Assuming you have an Employee class
+        public List<AttendanceEdit> AttendanceRecords { get; set; }
+        public int TotalPresent { get; set; }
 
     }
 

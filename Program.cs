@@ -2,6 +2,7 @@ using EmployeeAttendance.Models;
 using EmployeeAttendance.Security;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
+using Rotativa.AspNetCore;
 
 namespace EmployeeAttendance
 {
@@ -11,6 +12,8 @@ namespace EmployeeAttendance
         {
 
             var builder = WebApplication.CreateBuilder(args);
+
+            
 
             builder.Services.AddDbContext<EmployeeManagementSystemContext>(options =>
              options.UseSqlServer(builder.Configuration.GetConnectionString("Conn"))
@@ -32,6 +35,9 @@ namespace EmployeeAttendance
 
             var app = builder.Build();
 
+            // Configure Rotativa (PDF generator)
+            RotativaConfiguration.Setup(app.Environment.WebRootPath, "Rotativa");
+
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
             {
@@ -49,7 +55,7 @@ namespace EmployeeAttendance
 
             app.MapControllerRoute(
                 name: "default",
-                pattern: "{controller=Static}/{action=Index}/{id?}");
+                pattern: "{controller=Account}/{action=Login}/{id?}");
 
             app.Run();
         }

@@ -1,0 +1,245 @@
+﻿@model IEnumerable<AttendanceEdit>
+
+@{
+    ViewData["Title"] = "Employee Attendance Report";
+}
+
+<style>
+    .container {
+        background-color: #ffffff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-control-lg {
+        border-radius: 4px;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+        border-radius: 4px;
+    }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #004085;
+        }
+
+    .thead-dark {
+        background-color: #007bff;
+        color: #ffffff;
+    }
+
+    table {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    thead th {
+        text-align: center;
+    }
+
+    tbody td {
+        text-align: center;
+    }
+
+    .btn-back {
+        background-color: transparent;
+        border: none;
+        color: #007bff;
+        font-size: 24px;
+        cursor: pointer;
+    }
+
+        .btn-back:hover {
+            color: #0056b3;
+        }
+
+    .stats-summary {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+    }
+
+    .d-flex-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+    }
+
+    .employee-id-card {
+        display: flex;
+        align-items: center;
+        padding: 20px;
+        background-color: #e9f5ff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin-right: 20px;
+        max-width: 50%;
+        flex-grow: 1;
+    }
+
+    .employee-photo {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        overflow: hidden;
+        margin-right: 20px;
+        border: 3px solid #007bff;
+    }
+
+        .employee-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+    .employee-info {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+        .employee-info h4 {
+            margin: 0;
+            color: #007bff;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .employee-info p {
+            margin: 0;
+            font-size: 14px;
+            color: #333;
+        }
+
+    .form-container {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background-color: #e9f5ff;
+        padding: 10px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        flex-grow: 1;
+        max-width: 50%;
+    }
+
+    .form-group {
+        margin-right: 10px;
+    }
+
+    .form-inline {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+    }
+</style>
+
+<div class="container mt-5">
+    <div class="mb-4">
+        <button class="btn-back" onclick="history.back()">
+            <i class="fas fa-arrow-left"></i>
+        </button>
+    </div>
+
+    <h2 class="text-center mb-4 text-primary">@ViewData["Title"]</h2>
+
+    <!-- Flex container for employee ID and filter form -->
+    <div class="d-flex-container">
+        <!-- Employee ID Card -->
+        <div class="employee-id-card">
+            <div class="employee-photo">
+                <img src="@Url.Content($"~/EmpImage/{ViewBag.EmployeePhotoUrl}")" alt="Employee Photo" class="img-fluid rounded-circle">
+            </div>
+            <div class="employee-info">
+                <h4>@ViewBag.EmployeeName</h4>
+                <p><strong>Email:</strong> @ViewBag.EmployeeEmail</p>
+                <p><strong>Designation:</strong> @ViewBag.EmployeeDesignation</p>
+                <p><strong>Phone:</strong> @ViewBag.EmployeePhone</p>
+                <p><strong>Login Status:</strong> @ViewBag.LoginStatus</p>
+                <p><strong>Total Working Days:</strong> @ViewBag.TotalPresent</p>
+            </div>
+        </div>
+
+        <!-- Filter Form -->
+        <form asp-action="EmployeeReport" method="get" class="form-container" id="filterForm">
+            <input type="hidden" name="empId" value="@ViewBag.EmployeeId" />
+
+            <!-- Start Date Field with Label -->
+            <div class="form-group mb-2">
+                <label for="startDate" class="form-label">Start Date</label>
+                <input type="date" class="form-control form-control-lg" id="startDate" name="startDate"  />
+            </div>
+
+            <!-- End Date Field with Label -->
+            <div class="form-group mb-2">
+                <label for="endDate" class="form-label">End Date</label>
+                <input type="date" class="form-control form-control-lg" id="endDate" name="endDate"  />
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-lg">Filter</button>
+        </form>
+
+    </div>
+
+    <div class="text-center mb-3">
+        <form asp-action="DownloadPdf" method="get" id="downloadForm">
+            <input type="hidden" name="empId" value="@ViewBag.EmployeeId" />
+
+            <input type="hidden" id="downloadStartDate" name="startDate" value="startDate" />
+            <input type="hidden" id="downloadStartDate" name="endDate" value="endDate" />
+            <button type="submit" class="btn btn-success btn-lg" onclick="setDownloadDates()">
+                <i class="fas fa-download"></i> Download PDF
+            </button>
+        </form>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-striped table-bordered table-hover">
+            <thead class="thead-dark">
+                <tr>
+                    <th>SN</th> <!-- Serial Number Column -->
+                    <th>Date In</th>
+                    <th>Time In</th>
+                    <th>Date Out</th>
+                    <th>Time Out</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (int i = 0; i < Model.Count(); i++)
+                {
+                    var attendance = Model.ElementAt(i);
+                    <tr>
+                        <td>@(i + 1)</td> <!-- Serial Number -->
+                        <td>@attendance.DateIn.ToShortDateString()</td>
+                        <td>
+                            @(attendance.TimeIn.HasValue ? attendance.TimeIn.Value.ToString("hh:mm tt") : "N/A")
+                        </td>
+                        <td>@(attendance.DateOut.HasValue ? attendance.DateOut.Value.ToShortDateString() : "N/A")</td>
+                        <td>@(attendance.TimeOut.HasValue ? attendance.TimeOut.Value.ToString("hh:mm tt") : "N/A")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+<script>
+    function setDownloadDates() {
+        // Get values from filter form
+        var startDate = document.getElementById('startDate').value;
+        var endDate = document.getElementById('endDate').value;
+
+        // Set the values in the download form
+        document.getElementById('downloadStartDate').value = startDate;
+        document.getElementById('downloadEndDate').value = endDate;
+    }
+</script>

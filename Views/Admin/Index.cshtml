@@ -1,0 +1,74 @@
+﻿@{
+    Layout = "_Layout";
+}
+
+<div class="container my-5">
+    <h2 class="mb-4">Employee Attendance Dashboard</h2>
+
+    <!-- Attendance Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Total Employees</h5>
+                    <p class="card-text display-6">@ViewBag.TotalEmployees</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Present Today</h5>
+                    <p class="card-text display-6">@ViewBag.TotalPresent</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-danger mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Absent Today</h5>
+                    <p class="card-text display-6">@ViewBag.TotalAbsent</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Attendance Table -->
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>Employee ID</th>
+                    <th>Employee Name</th>
+                    <th>Designation</th>
+                    <th>Time In</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var attendance in ViewBag.AttendanceToday)
+                {
+                    <tr >
+                        <td>@attendance.EmpId</td>
+                        <td>@attendance.employeeName</td>
+                        <td>@attendance.post</td>
+                        <td>@attendance.TimeIn?.ToString("hh:mm tt")</td>
+                        <td>
+                            <span class="badge @(attendance.Status == "Present" ? "bg-success" : attendance.Status == "Absent" ? "bg-danger" : "bg-secondary")">
+                                @attendance.Status
+                            </span>
+                        </td>
+                        <td>
+                            <form asp-controller="Admin" asp-action="EmployeeReport" method="get" style="display:inline;">
+                                <input type="hidden" name="empId" value="@attendance.EmpId" />
+                                <button type="submit" class="btn btn-sm btn-primary">View</button>
+                            </form>
+                            <button class="btn btn-sm btn-danger">Edit</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
